@@ -1,0 +1,7 @@
+#!/bin/bash
+echo "Starting ImmigrationGPT Frontend..."
+cd frontend
+echo "Installing/updating Node.js dependencies..."
+npm install
+echo "Starting Next.js development server..."
+npm run dev

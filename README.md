@@ -23,6 +23,12 @@ This project was developed with a **data-driven, evaluation-first approach**:
 - **🎯 100% Precision & Recall** on immigration policy questions
 - **📈 15-22% Performance Improvement** over baseline RAG systems
 
+## 🎥 Demo Video
+
+Watch ImmigrationGPT in action! See how our AI-powered immigration assistant handles complex policy questions with instant, accurate responses.
+
+**[📺 Watch Demo Video](https://www.loom.com/share/f49b6c5ddd604744b836872ad3ab86e6?sid=2925ffdb-3e62-474a-8aec-10fc9fc83315)**
+
 ## 🚀 Features
 
 - **AI-Powered Chat Interface**: Modern, responsive chat UI with message history
@@ -34,7 +40,6 @@ This project was developed with a **data-driven, evaluation-first approach**:
 - **Message History**: Persistent conversation storage
 - **Responsive Design**: Works on desktop and mobile
 - **Comprehensive Evaluation**: Built-in RAGAS framework for performance monitoring
-- **Vercel Ready**: Optimized for deployment
 
 ## 🏗️ Project Structure
 
@@ -58,8 +63,7 @@ immigrationGPTv2/
 │   └── *.txt                    # Processed text files
 ├── 📄 Analysis.ipynb            # Comprehensive retriever evaluation
 ├── 📄 Report-qna.md             # Project documentation & Q&A
-├── 📄 README.md                 # This file
-└── 📄 vercel.json              # Vercel deployment config
+└── 📄 README.md                 # This file
 ```
 
 ### 📁 Key Files Explained
@@ -254,42 +258,70 @@ curl -X POST http://localhost:8000/chat \
 
 ## 🚀 Deployment
 
-### Vercel Deployment
+### 🏠 Local Deployment (Recommended)
 
-1. **Install Vercel CLI**
+ImmigrationGPT is designed for **local deployment** to ensure data privacy and full control over your environment. All setup instructions are provided above in the Quick Start section.
+
+#### ✅ Why Local Deployment?
+
+- 🔒 **Data Privacy**: Your immigration data stays on your machine
+- 🎛️ **Full Control**: Complete control over API keys and configuration
+- 💰 **Cost Control**: No hosting fees, only pay for API usage
+- 🔧 **Customization**: Easy to modify and extend for your needs
+- 🚀 **Quick Setup**: Get started in minutes with the provided scripts
+
+#### 🛠️ Local Development Scripts
+
+We've provided convenient scripts for easy local deployment:
+
+**Windows Users:**
 ```bash
-npm i -g vercel
+# Start both backend and frontend
+./start_all.bat
+
+# Or start individually
+./start_backend.bat
+./start_frontend.bat
 ```
 
-2. **Deploy Backend**
+**Linux/Mac Users:**
+```bash
+# Start both backend and frontend
+./start_all.sh
+
+# Or start individually
+./start_backend.sh
+./start_frontend.sh
+```
+
+#### 🌐 Access Your Application
+
+Once both services are running:
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/docs
+
+### 🔧 Manual Deployment
+
+If you prefer to run services manually:
+
+1. **Backend Setup:**
 ```bash
 cd backend
-vercel --prod
+pip install -r requirements.txt
+python main.py
 ```
 
-3. **Deploy Frontend**
+2. **Frontend Setup:**
 ```bash
 cd frontend
-vercel --prod
+npm install
+npm run dev
 ```
 
-4. **Set Environment Variables**
-```bash
-vercel env add OPENAI_API_KEY
-vercel env add TAVILY_API_KEY
-vercel env add LANGCHAIN_API_KEY
-```
-
-### Manual Deployment
-
-1. Build the frontend:
-```bash
-cd frontend
-npm run build
-```
-
-2. Deploy backend to your preferred Python hosting service
-3. Update `NEXT_PUBLIC_API_URL` to point to your backend URL
+3. **Environment Configuration:**
+   - Backend: Configure `.env` file with your API keys
+   - Frontend: Set `NEXT_PUBLIC_API_URL=http://localhost:8000` in `.env.local`
 
 ## 🧪 Testing
 
@@ -444,7 +476,7 @@ Each technology choice was **purposefully selected**:
 | **Backend** | FastAPI + Python | High-performance API with automatic docs & type safety |
 | **Frontend** | Next.js 14 + TypeScript | Rapid development of responsive, type-safe web apps |
 | **AI Engine** | OpenAI GPT + Custom RAG | State-of-the-art LLMs with retrieval-augmented generation |
-| **Deployment** | Vercel | Seamless deployment, auto-scaling, integrated CI/CD |
+| **Deployment** | Local Development | Full control, data privacy, and easy customization |
 | **Evaluation** | RAGAS Framework | Scientific validation of retrieval performance |
 
 ### 📈 Iterative Improvement Process

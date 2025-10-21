@@ -37,7 +37,7 @@ Each process demands meticulous attention to documentation details where **minor
 | 🖥️ **Backend** | FastAPI + Python | High-performance API with automatic docs & type safety |
 | 🎨 **Frontend** | Next.js 14 + TypeScript + Tailwind | Rapid development of responsive, type-safe web apps |
 | 🤖 **AI Engine** | OpenAI GPT + Custom RAG | State-of-the-art LLMs with retrieval-augmented generation |
-| 🚀 **Deployment** | Vercel (monorepo) | Seamless deployment, auto-scaling, integrated CI/CD |
+| 🚀 **Deployment** | Local Development | Full control, data privacy, and easy customization |
 | 📦 **Package Mgmt** | uv (Python) + npm (Node.js) | Fast, reliable dependency management |
 | 🔍 **Web Search** | Tavily API | Real-time search across official immigration websites |
 
@@ -76,8 +76,9 @@ Each process demands meticulous attention to documentation details where **minor
 
 ## 🚀 Task 4: Live Prototype
 
-**✅ Answer:** [Vercel deployment link to be added]
+**✅ Answer:** [Local deployment instructions available in README.md - see Quick Start section]
 
+**📹 Loom Video:** [📺 Watch Demo Video](https://www.loom.com/share/f49b6c5ddd604744b836872ad3ab86e6?sid=2925ffdb-3e62-474a-8aec-10fc9fc83315) 
 ---
 
 ## 🧪 Task 5: RAGAS Framework Evaluation
@@ -222,8 +223,8 @@ Each process demands meticulous attention to documentation details where **minor
 
 ## 🎬 Final Submission
 
-**📹 Loom Video:** [To be added]  
-**🌐 Live Demo:** [Vercel deployment link to be added]
+**📹 Loom Video:** [📺 Watch Demo Video](https://www.loom.com/share/f49b6c5ddd604744b836872ad3ab86e6?sid=2925ffdb-3e62-474a-8aec-10fc9fc83315)  
+**🌐 Local Setup:** [Follow Quick Start instructions in README.md]
 
 ---
 
