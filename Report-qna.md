@@ -28,6 +28,12 @@ Each process demands meticulous attention to documentation details where **minor
 - 🌍 **Democratizes access** to immigration expertise
 - 😌 **Eliminates stress** and financial burden
 
+### 🏗️ **Architecture Overview**
+
+![RAG Architecture Diagram](images/RAG-architecture.png)
+
+*The diagram above illustrates our Retrieval-Augmented Generation (RAG) system architecture, showing the complete flow from document ingestion to answer generation.*
+
 ### ❓ **Question:** Describe the tools you plan to use in each part of your stack. Write one sentence on why you made each tooling choice.
 
 **✅ Answer:**
