@@ -65,6 +65,31 @@ class ApiService {
       throw new Error('Failed to get settings status')
     }
   }
+
+  async setRetrievalMethod(method: 'naive' | 'bm25') {
+    try {
+      const response = await axios.post(`${this.getApiUrl()}/settings/retrieval-method`, {
+        method
+      })
+      return response.data
+    } catch (error) {
+      console.error('Set retrieval method failed:', error)
+      if (axios.isAxiosError(error)) {
+        throw new Error(error.response?.data?.detail || 'Failed to set retrieval method')
+      }
+      throw new Error('Failed to set retrieval method')
+    }
+  }
+
+  async getRetrievalStatus() {
+    try {
+      const response = await axios.get(`${this.getApiUrl()}/settings/retrieval-status`)
+      return response.data
+    } catch (error) {
+      console.error('Get retrieval status failed:', error)
+      throw new Error('Failed to get retrieval status')
+    }
+  }
 }
 
 export const apiService = new ApiService()

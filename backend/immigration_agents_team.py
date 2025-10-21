@@ -12,6 +12,7 @@ warnings.filterwarnings('ignore')
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_community.tools.arxiv.tool import ArxivQueryRun
 from langchain_community.document_loaders import DirectoryLoader, PyMuPDFLoader
+from langchain_community.retrievers import BM25Retriever
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import ChatOpenAI
 from langchain_openai.embeddings import OpenAIEmbeddings
@@ -22,6 +23,9 @@ from langchain_core.documents import Document
 from langchain_core.tools import tool
 from langchain.agents import AgentExecutor, create_openai_functions_agent
 from langchain.output_parsers.openai_functions import JsonOutputFunctionsParser
+
+# BM25 imports
+from rank_bm25 import BM25Okapi
 
 # LangGraph imports
 from langgraph.graph.message import add_messages
@@ -72,6 +76,14 @@ class ImmigrationRAGSystem:
         self.embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
         self.vector_store = None
         self.retriever = None
+        
+        # BM25 components
+        self.bm25_retriever = None
+        self.documents_for_bm25 = None
+        
+        # Retrieval method selector
+        self.retrieval_method = os.getenv("RETRIEVAL_METHOD", "bm25")  # Default to BM25
+        
         self.setup_vector_store()
     
     def create_vector_store(self, documents, collection_name: str):
@@ -84,7 +96,7 @@ class ImmigrationRAGSystem:
         )
     
     def setup_vector_store(self):
-        """Initialize the vector store with immigration documents."""
+        """Initialize both vector store and BM25 retriever with immigration documents."""
         try:
             # Load documents
             directory_loader = DirectoryLoader("data", glob="**/*.pdf", loader_cls=PyMuPDFLoader)
@@ -106,10 +118,61 @@ class ImmigrationRAGSystem:
             self.retriever = self.vector_store.as_retriever()
             print(f"Vector store created with {len(split_docs)} document chunks")
             
+            # Setup BM25 retriever
+            self.setup_bm25_retriever(split_docs)
+            
         except Exception as e:
             print(f"Error setting up vector store: {e}")
             self.vector_store = None
             self.retriever = None
+            self.bm25_retriever = None
+    
+    def setup_bm25_retriever(self, documents):
+        """Initialize BM25 retriever with documents."""
+        try:
+            # Store documents for BM25
+            self.documents_for_bm25 = documents
+            
+            # Create BM25 retriever
+            self.bm25_retriever = BM25Retriever.from_documents(documents)
+            self.bm25_retriever.k = 5  # Return top 5 documents
+            
+            print(f"BM25 retriever created with {len(documents)} document chunks")
+            
+        except Exception as e:
+            print(f"Error setting up BM25 retriever: {e}")
+            self.bm25_retriever = None
+    
+    def set_retrieval_method(self, method: str):
+        """Switch between 'naive' and 'bm25' retrieval methods."""
+        if method in ["naive", "bm25"]:
+            self.retrieval_method = method
+            print(f"Switched to {method} retrieval method")
+        else:
+            raise ValueError("Method must be 'naive' or 'bm25'")
+    
+    def get_retrieval_status(self) -> dict:
+        """Get current retrieval method and status."""
+        return {
+            "current_method": self.retrieval_method,
+            "naive_available": self.retriever is not None,
+            "bm25_available": self.bm25_retriever is not None
+        }
+    
+    def get_active_retriever(self):
+        """Get the currently active retriever based on retrieval method."""
+        if self.retrieval_method == "bm25" and self.bm25_retriever:
+            return self.bm25_retriever
+        elif self.retrieval_method == "naive" and self.retriever:
+            return self.retriever
+        else:
+            # Fallback to available retriever
+            if self.retriever:
+                return self.retriever
+            elif self.bm25_retriever:
+                return self.bm25_retriever
+            else:
+                return None
 
 # RAG system will be initialized in ImmigrationGPT class
 
@@ -155,13 +218,13 @@ Remember: You are helping people understand complex immigration processes, so be
             ("human", self.human_template)
         ])
     
-    def retrieve_and_generate(self, question: str) -> str:
-        """Retrieve relevant documents and generate a response."""
+    def retrieve_and_generate_naive(self, question: str) -> str:
+        """Retrieve relevant documents using naive vector similarity and generate a response."""
         try:
             if not self.rag_system.retriever:
                 return "I'm sorry, but I don't have access to the immigration policy database at the moment. Please try again later or ask about current immigration information."
             
-            print(f"[SEARCH] Searching knowledge base for: {question[:50]}...")
+            print(f"[NAIVE SEARCH] Searching knowledge base for: {question[:50]}...")
             
             # Retrieve relevant documents with increased k for better context
             retrieved_docs = self.rag_system.retriever.invoke(question)
@@ -177,7 +240,7 @@ Remember: You are helping people understand complex immigration processes, so be
             
             context = "\n\n---\n\n".join(context_parts)
             
-            print(f"[FOUND] Found {len(retrieved_docs)} relevant documents")
+            print(f"[NAIVE FOUND] Found {len(retrieved_docs)} relevant documents")
             
             # Generate response
             generator_chain = self.chat_prompt | self.generator_llm | StrOutputParser()
@@ -186,12 +249,60 @@ Remember: You are helping people understand complex immigration processes, so be
                 "context": context
             })
             
-            print(f"[SUCCESS] Generated response from knowledge base")
+            print(f"[NAIVE SUCCESS] Generated response from knowledge base")
             return response
             
         except Exception as e:
-            print(f"[ERROR] Error in RAG retrieval: {e}")
+            print(f"[NAIVE ERROR] Error in RAG retrieval: {e}")
             return f"I encountered an error while searching my knowledge base: {str(e)}. Please try asking about current immigration information or rephrase your question."
+    
+    def retrieve_and_generate_bm25(self, question: str) -> str:
+        """Retrieve relevant documents using BM25 and generate a response."""
+        try:
+            if not self.rag_system.bm25_retriever:
+                return "I'm sorry, but I don't have access to the BM25 immigration policy database at the moment. Please try again later or ask about current immigration information."
+            
+            print(f"[BM25 SEARCH] Searching knowledge base for: {question[:50]}...")
+            
+            # Retrieve relevant documents using BM25
+            retrieved_docs = self.rag_system.bm25_retriever.invoke(question)
+            
+            if not retrieved_docs:
+                return "I couldn't find specific information about this topic in my knowledge base. You might want to ask about current immigration policies or try rephrasing your question."
+            
+            # Format context with better structure
+            context_parts = []
+            for i, doc in enumerate(retrieved_docs[:5]):  # Limit to top 5 most relevant docs
+                if doc.page_content.strip():
+                    context_parts.append(f"Source {i+1}:\n{doc.page_content.strip()}")
+            
+            context = "\n\n---\n\n".join(context_parts)
+            
+            print(f"[BM25 FOUND] Found {len(retrieved_docs)} relevant documents")
+            
+            # Generate response
+            generator_chain = self.chat_prompt | self.generator_llm | StrOutputParser()
+            response = generator_chain.invoke({
+                "query": question, 
+                "context": context
+            })
+            
+            print(f"[BM25 SUCCESS] Generated response from knowledge base")
+            return response
+            
+        except Exception as e:
+            print(f"[BM25 ERROR] Error in BM25 retrieval: {e}")
+            return f"I encountered an error while searching my knowledge base: {str(e)}. Please try asking about current immigration information or rephrase your question."
+    
+    def retrieve_and_generate(self, question: str) -> str:
+        """Router method that calls appropriate retrieval based on current method."""
+        method = self.rag_system.retrieval_method
+        print(f"[ROUTER] Using {method} retrieval method")
+        
+        if method == "bm25":
+            return self.retrieve_and_generate_bm25(question)
+        else:
+            return self.retrieve_and_generate_naive(question)
 
 
 
@@ -516,6 +627,66 @@ class ImmigrationGPT:
                 "tool_description": "System not initialized - API keys required"
             }
         return self.agent_system.process_query(question)
+    
+    def set_retrieval_method(self, method: str):
+        """Switch between 'naive' and 'bm25' retrieval methods."""
+        if not self.is_ready():
+            raise RuntimeError("System is not ready. Please initialize with API keys first.")
+        
+        if method in ["naive", "bm25"]:
+            self.rag_system.set_retrieval_method(method)
+            print(f"ImmigrationGPT switched to {method} retrieval method")
+        else:
+            raise ValueError("Method must be 'naive' or 'bm25'")
+    
+    def get_retrieval_status(self) -> dict:
+        """Get current retrieval method and status."""
+        if not self.is_ready():
+            return {
+                "current_method": "unknown",
+                "naive_available": False,
+                "bm25_available": False,
+                "system_ready": False
+            }
+        
+        status = self.rag_system.get_retrieval_status()
+        status["system_ready"] = True
+        return status
+    
+    def test_retrieval_methods(self, test_question: str = "What is Form I-130?") -> dict:
+        """Test both retrieval methods with a sample question."""
+        if not self.is_ready():
+            return {"error": "System is not ready. Please initialize with API keys first."}
+        
+        results = {}
+        
+        # Test naive method
+        try:
+            original_method = self.rag_system.retrieval_method
+            self.rag_system.retrieval_method = "naive"
+            naive_response = self.rag_agent.retrieve_and_generate(test_question)
+            results["naive"] = {
+                "success": True,
+                "response": naive_response[:200] + "..." if len(naive_response) > 200 else naive_response
+            }
+        except Exception as e:
+            results["naive"] = {"success": False, "error": str(e)}
+        
+        # Test BM25 method
+        try:
+            self.rag_system.retrieval_method = "bm25"
+            bm25_response = self.rag_agent.retrieve_and_generate(test_question)
+            results["bm25"] = {
+                "success": True,
+                "response": bm25_response[:200] + "..." if len(bm25_response) > 200 else bm25_response
+            }
+        except Exception as e:
+            results["bm25"] = {"success": False, "error": str(e)}
+        
+        # Restore original method
+        self.rag_system.retrieval_method = original_method
+        
+        return results
 
 
 # Example usage

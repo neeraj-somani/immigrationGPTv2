@@ -25,6 +25,9 @@ langchain-qdrant>=0.1.0
 # Search tools
 langchain-tavily>=0.1.0
 
+# BM25 retrieval
+rank-bm25>=0.2.2
+
 # AI/ML providers
 openai>=1.0.0
 

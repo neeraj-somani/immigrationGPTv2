@@ -25,6 +25,7 @@ export interface Settings {
   tavilyApiKey: string
   langchainApiKey: string
   apiUrl: string
+  retrievalMethod: 'naive' | 'bm25'
 }
 
 interface AppState {
@@ -56,6 +57,7 @@ const defaultSettings: Settings = {
   tavilyApiKey: '',
   langchainApiKey: '',
   apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+  retrievalMethod: 'bm25', // Default to BM25
 }
 
 // Create the store with proper SSR handling

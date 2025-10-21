@@ -18,6 +18,7 @@ export function SettingsModal({ isOpen, onClose, isRequired = false }: SettingsM
     openaiApiKey: '',
     tavilyApiKey: '',
     langchainApiKey: '',
+    retrievalMethod: 'bm25' as 'naive' | 'bm25',
   })
   const [showKeys, setShowKeys] = useState({
     openai: false,
@@ -38,6 +39,7 @@ export function SettingsModal({ isOpen, onClose, isRequired = false }: SettingsM
         openaiApiKey: settings.openaiApiKey,
         tavilyApiKey: settings.tavilyApiKey,
         langchainApiKey: settings.langchainApiKey,
+        retrievalMethod: settings.retrievalMethod,
       })
       loadSettingsStatus()
     }
@@ -109,6 +111,7 @@ export function SettingsModal({ isOpen, onClose, isRequired = false }: SettingsM
         openaiApiKey: formData.openaiApiKey,
         tavilyApiKey: formData.tavilyApiKey,
         langchainApiKey: formData.langchainApiKey,
+        retrievalMethod: formData.retrievalMethod,
       })
 
       // Update backend settings
@@ -138,6 +141,21 @@ export function SettingsModal({ isOpen, onClose, isRequired = false }: SettingsM
 
   const toggleKeyVisibility = (key: 'openai' | 'tavily' | 'langchain') => {
     setShowKeys(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const handleRetrievalMethodChange = async (method: 'naive' | 'bm25') => {
+    try {
+      await apiService.setRetrievalMethod(method)
+      setFormData(prev => ({ ...prev, retrievalMethod: method }))
+      updateSettings({ retrievalMethod: method })
+      toast.success(`Retrieval method switched to ${method.toUpperCase()}`)
+      
+      // Reload status to get updated information
+      await loadSettingsStatus()
+    } catch (error) {
+      console.error('Failed to change retrieval method:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to change retrieval method')
+    }
   }
 
   if (!isOpen) return null
@@ -281,7 +299,76 @@ export function SettingsModal({ isOpen, onClose, isRequired = false }: SettingsM
 
             </div>
 
-            {/* Help Text */}
+            {/* Retrieval Method Selection */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-900">Retrieval Method</h3>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Choose Retrieval Method
+                </label>
+                <div className="flex space-x-4">
+                  <button
+                    onClick={() => handleRetrievalMethodChange('bm25')}
+                    disabled={!settingsStatus?.service_status?.includes('✅')}
+                    className={`px-4 py-2 rounded-lg border transition-colors flex-1 ${
+                      formData.retrievalMethod === 'bm25'
+                        ? 'bg-blue-500 text-white border-blue-500'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    } ${!settingsStatus?.service_status?.includes('✅') ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    <div className="text-center">
+                      <div className="font-medium">BM25</div>
+                      <div className="text-xs opacity-75">Fast & Accurate</div>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => handleRetrievalMethodChange('naive')}
+                    disabled={!settingsStatus?.service_status?.includes('✅')}
+                    className={`px-4 py-2 rounded-lg border transition-colors flex-1 ${
+                      formData.retrievalMethod === 'naive'
+                        ? 'bg-blue-500 text-white border-blue-500'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    } ${!settingsStatus?.service_status?.includes('✅') ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    <div className="text-center">
+                      <div className="font-medium">Naive</div>
+                      <div className="text-xs opacity-75">Semantic Search</div>
+                    </div>
+                  </button>
+                </div>
+                
+                {/* Current Status */}
+                {settingsStatus && (
+                  <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Current Method:</span>
+                      <span className="font-medium text-gray-900">
+                        {settingsStatus.retrieval_method?.toUpperCase() || 'Unknown'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm mt-1">
+                      <span className="text-gray-600">BM25 Available:</span>
+                      <span className={`font-medium ${settingsStatus.bm25_available ? 'text-green-600' : 'text-red-600'}`}>
+                        {settingsStatus.bm25_available ? '✅ Yes' : '❌ No'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm mt-1">
+                      <span className="text-gray-600">Naive Available:</span>
+                      <span className={`font-medium ${settingsStatus.naive_available ? 'text-green-600' : 'text-red-600'}`}>
+                        {settingsStatus.naive_available ? '✅ Yes' : '❌ No'}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                
+                <p className="text-xs text-gray-500 mt-2">
+                  BM25 is recommended for most queries (faster, more accurate). 
+                  Use Naive for complex conceptual questions.
+                </p>
+              </div>
+            </div>
             <div className="bg-blue-50 rounded-lg p-4">
               <h4 className="font-medium text-blue-900 mb-2">Getting API Keys</h4>
               <div className="text-sm text-blue-800 space-y-1">

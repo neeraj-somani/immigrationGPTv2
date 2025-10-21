@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, Bot, User, Loader2, Plus, Settings, MessageSquare, Trash2 } from 'lucide-react'
+import { Send, Bot, User, Loader2, Plus, Settings, MessageSquare, Trash2, Zap, Search } from 'lucide-react'
 import { useAppStore } from '@/store/appStore'
 import { apiService } from '@/services/api'
 import { MessageBubble } from './MessageBubble'
@@ -317,6 +317,20 @@ export function ChatInterface() {
                 </div>
               </div>
             )}
+          </div>
+          
+          {/* Retrieval Method Indicator */}
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 px-2 py-1 bg-gray-100 rounded-lg">
+              {settings.retrievalMethod === 'bm25' ? (
+                <Zap size={14} className="text-blue-500" />
+              ) : (
+                <Search size={14} className="text-purple-500" />
+              )}
+              <span className="text-xs font-medium text-gray-700">
+                {settings.retrievalMethod.toUpperCase()}
+              </span>
+            </div>
           </div>
           
           <button

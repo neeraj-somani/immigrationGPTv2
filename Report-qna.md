@@ -84,7 +84,7 @@ Each process demands meticulous attention to documentation details where **minor
 
 **✅ Answer:** [Local deployment instructions available in README.md - see Quick Start section]
 
-**📹 Loom Video:** [📺 Watch Demo Video](https://www.loom.com/share/f49b6c5ddd604744b836872ad3ab86e6?sid=2925ffdb-3e62-474a-8aec-10fc9fc83315) 
+**📹 Loom Video:** [📺 Watch Demo Video](https://www.loom.com/share/24c46485c0314d48b1ee943eb614dafd?sid=7381e918-ee65-418d-8c11-557981c6c7a4) 
 ---
 
 ## 🧪 Task 5: RAGAS Framework Evaluation
@@ -229,7 +229,7 @@ Each process demands meticulous attention to documentation details where **minor
 
 ## 🎬 Final Submission
 
-**📹 Loom Video:** [📺 Watch Demo Video](https://www.loom.com/share/f49b6c5ddd604744b836872ad3ab86e6?sid=2925ffdb-3e62-474a-8aec-10fc9fc83315)  
+**📹 Loom Video:** [📺 Watch Demo Video](https://www.loom.com/share/24c46485c0314d48b1ee943eb614dafd?sid=7381e918-ee65-418d-8c11-557981c6c7a4)  
 **🌐 Local Setup:** [Follow Quick Start instructions in README.md]
 
 ---

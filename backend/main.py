@@ -221,11 +221,65 @@ async def get_settings_status():
             "service_status": "✅ Ready" if immigration_gpt_instance and immigration_gpt_instance.is_ready() else "❌ Not ready - API keys required"
         }
         
+        # Add retrieval method status if system is ready
+        if immigration_gpt_instance and immigration_gpt_instance.is_ready():
+            retrieval_status = immigration_gpt_instance.get_retrieval_status()
+            status.update({
+                "retrieval_method": retrieval_status.get("current_method", "unknown"),
+                "naive_available": retrieval_status.get("naive_available", False),
+                "bm25_available": retrieval_status.get("bm25_available", False)
+            })
+        
         return JSONResponse(content=status)
         
     except Exception as e:
         logger.error(f"Error getting settings status: {e}")
         raise HTTPException(status_code=500, detail=f"Error getting settings status: {str(e)}")
+
+@app.post("/settings/retrieval-method")
+async def set_retrieval_method(request: dict):
+    """Set the retrieval method (naive or bm25)."""
+    try:
+        if not immigration_gpt_instance or not immigration_gpt_instance.is_ready():
+            raise HTTPException(status_code=503, detail="Service not ready. Please configure API keys first.")
+        
+        method = request.get("method")
+        if method not in ["naive", "bm25"]:
+            raise HTTPException(status_code=400, detail="Method must be 'naive' or 'bm25'")
+        
+        immigration_gpt_instance.set_retrieval_method(method)
+        
+        return JSONResponse(content={
+            "status": "success",
+            "message": f"Retrieval method set to {method}",
+            "current_method": method
+        })
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error setting retrieval method: {e}")
+        raise HTTPException(status_code=500, detail=f"Error setting retrieval method: {str(e)}")
+
+@app.get("/settings/retrieval-status")
+async def get_retrieval_status():
+    """Get the current retrieval method status."""
+    try:
+        if not immigration_gpt_instance or not immigration_gpt_instance.is_ready():
+            return JSONResponse(content={
+                "current_method": "unknown",
+                "naive_available": False,
+                "bm25_available": False,
+                "system_ready": False
+            })
+        
+        status = immigration_gpt_instance.get_retrieval_status()
+        status["system_ready"] = True
+        return JSONResponse(content=status)
+        
+    except Exception as e:
+        logger.error(f"Error getting retrieval status: {e}")
+        raise HTTPException(status_code=500, detail=f"Error getting retrieval status: {str(e)}")
 
 # Error handlers
 @app.exception_handler(404)

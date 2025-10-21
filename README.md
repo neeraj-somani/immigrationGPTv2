@@ -17,22 +17,23 @@ This project was developed with a **data-driven, evaluation-first approach**:
 
 ### 📊 Key Achievements
 
-- **🏆 92% Overall Performance Score** across multiple retrieval methods
+- **🏆 92% Overall Performance Score** with BM25 retrieval (default method)
 - **⚡ 1.76s Response Time** with BM25 semantic chunking
 - **💰 $0.0015 Cost per Query** - highly cost-effective
 - **🎯 100% Precision & Recall** on immigration policy questions
 - **📈 15-22% Performance Improvement** over baseline RAG systems
+- **🔄 Dual Retrieval System** - BM25 (default) + Naive similarity options
 
 ## 🎥 Demo Video
 
 Watch ImmigrationGPT in action! See how our AI-powered immigration assistant handles complex policy questions with instant, accurate responses.
 
-**[📺 Watch Demo Video](https://www.loom.com/share/f49b6c5ddd604744b836872ad3ab86e6?sid=2925ffdb-3e62-474a-8aec-10fc9fc83315)**
+**[📺 Watch Demo Video](https://www.loom.com/share/24c46485c0314d48b1ee943eb614dafd?sid=7381e918-ee65-418d-8c11-557981c6c7a4)**
 
 ## 🚀 Features
 
 - **AI-Powered Chat Interface**: Modern, responsive chat UI with message history
-- **Advanced RAG System**: Multiple retrieval methods including BM25, Compression, and Parent Document retrieval
+- **Dual Retrieval System**: Advanced BM25 (default) and Naive similarity retrieval methods
 - **Web Search Integration**: Tavily search for up-to-date information
 - **Smart Fallback**: Automatically switches between RAG and web search
 - **Settings Management**: Secure API key configuration
@@ -83,6 +84,7 @@ immigrationGPTv2/
 - **LangChain**: LLM application framework
 - **LangGraph**: Agent workflow management
 - **Qdrant**: Vector database for RAG
+- **BM25**: Advanced keyword-based retrieval (default)
 - **Tavily**: Web search API
 - **OpenAI**: GPT models for generation
 
@@ -103,6 +105,7 @@ immigrationGPTv2/
   - OpenAI API key
   - Tavily API key
   - LangChain API key (optional)
+- **New**: BM25 retrieval library (rank-bm25) - automatically installed
 
 ## 🚀 Quick Start
 
@@ -235,6 +238,125 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 - **Tavily**: Free tier available for development
 - **LangSmith**: Free tier includes basic tracing and monitoring
 
+## 🔍 Dual Retrieval System
+
+ImmigrationGPT features an advanced **dual retrieval system** that combines the best of both keyword-based and semantic search approaches. This system automatically selects the optimal retrieval method based on your configuration, ensuring the most accurate and relevant responses for immigration queries.
+
+### 🎯 Retrieval Methods
+
+#### **BM25 Retrieval (Default)**
+- **Best For**: Exact keyword matching, form numbers, specific procedures
+- **Performance**: ⚡ 1.76s response time, 🎯 100% precision & recall
+- **Cost**: 💰 No API costs for retrieval (only for generation)
+- **Examples**: "Form I-130 requirements", "asylum application process"
+
+#### **Naive Retrieval (Alternative)**
+- **Best For**: Conceptual queries, semantic similarity, complex scenarios
+- **Performance**: 🔍 Semantic understanding, 📚 Context-aware responses
+- **Cost**: 💰 Requires embedding API calls
+- **Examples**: "How does family immigration work?", "refugee status benefits"
+
+### ⚙️ Configuration Options
+
+#### **Method 1: Environment Variable (Recommended)**
+```bash
+# Set default retrieval method
+export RETRIEVAL_METHOD=bm25    # Default - fastest and most accurate
+# OR
+export RETRIEVAL_METHOD=naive  # Alternative - semantic search
+```
+
+#### **Method 2: Runtime Configuration**
+```python
+# Switch methods programmatically
+immigration_gpt = ImmigrationGPT()
+
+# Switch to BM25 (recommended for most queries)
+immigration_gpt.set_retrieval_method("bm25")
+
+# Switch to Naive (for conceptual queries)
+immigration_gpt.set_retrieval_method("naive")
+
+# Check current status
+status = immigration_gpt.get_retrieval_status()
+print(f"Current method: {status['current_method']}")
+```
+
+#### **Method 3: Test Both Methods**
+```python
+# Compare both methods with the same question
+results = immigration_gpt.test_retrieval_methods("What is Form I-130?")
+print(f"BM25 success: {results['bm25']['success']}")
+print(f"Naive success: {results['naive']['success']}")
+```
+
+### 📊 Performance Comparison
+
+| Method | Speed | Accuracy | Cost | Best Use Case |
+|--------|-------|----------|------|---------------|
+| **BM25** | ⚡ Fastest (1.76s) | 🎯 100% Precision | 💰 Free retrieval | Form numbers, procedures |
+| **Naive** | 🔍 Moderate | 📚 Semantic understanding | 💰 API costs | Conceptual queries |
+
+### 🎯 When to Use Each Method
+
+#### **Use BM25 (Default) When:**
+- ✅ Asking about specific forms (I-130, I-730, etc.)
+- ✅ Need exact procedure steps
+- ✅ Looking for specific requirements
+- ✅ Want fastest response time
+- ✅ Minimizing API costs
+
+#### **Use Naive When:**
+- ✅ Asking conceptual questions
+- ✅ Need semantic understanding
+- ✅ Complex multi-part scenarios
+- ✅ Want context-aware responses
+
+### 🔄 Automatic Switching
+
+The system includes intelligent fallback mechanisms:
+- **Primary**: Uses your configured method (BM25 by default)
+- **Fallback**: Automatically switches to available method if primary fails
+- **Error Handling**: Graceful degradation with helpful error messages
+
+### 🛠️ Advanced Configuration
+
+#### **Custom BM25 Parameters**
+```python
+# Access BM25 retriever for advanced configuration
+rag_system = ImmigrationRAGSystem()
+if rag_system.bm25_retriever:
+    rag_system.bm25_retriever.k = 10  # Return top 10 documents
+```
+
+#### **Hybrid Approach (Future Enhancement)**
+```python
+# Future: Combine both methods for optimal results
+# This will be available in upcoming versions
+immigration_gpt.set_retrieval_method("hybrid")
+```
+
+### 📈 Performance Monitoring
+
+Monitor your retrieval performance with built-in tools:
+
+```python
+# Get detailed status
+status = immigration_gpt.get_retrieval_status()
+print(f"Current method: {status['current_method']}")
+print(f"BM25 available: {status['bm25_available']}")
+print(f"Naive available: {status['naive_available']}")
+print(f"System ready: {status['system_ready']}")
+```
+
+### 🎯 Best Practices
+
+1. **Start with BM25**: Default method works best for most immigration queries
+2. **Switch for Concepts**: Use Naive for complex, conceptual questions
+3. **Monitor Performance**: Use status methods to ensure optimal configuration
+4. **Test Both Methods**: Compare results for critical queries
+5. **Environment Variables**: Set RETRIEVAL_METHOD for consistent behavior
+
 ## 📚 API Documentation
 
 ### Endpoints
@@ -348,6 +470,22 @@ npm test
 5. **View History**: Access previous conversations from the sidebar
 6. **Copy Responses**: Click the copy button on any AI response
 
+### Retrieval Method Selection
+
+ImmigrationGPT uses **BM25 retrieval by default** for optimal performance. You can switch to Naive retrieval for conceptual queries:
+
+#### **BM25 (Default) - Best for Most Queries**
+- ✅ Specific forms and procedures
+- ✅ Exact requirements and steps
+- ✅ Fastest response time (1.76s)
+- ✅ No additional API costs
+
+#### **Naive - Best for Conceptual Queries**
+- ✅ Complex scenarios and concepts
+- ✅ Semantic understanding
+- ✅ Context-aware responses
+- ⚠️ Requires embedding API calls
+
 ### Example Questions
 
 - "What is Form I-730?"
@@ -392,7 +530,7 @@ The `Analysis.ipynb` file contains our **scientific evaluation framework** that 
 | **Compression** | Contextual compression with reranking | 🥈 Rank 2: 0.9200 score |
 | **Parent Document** | Hierarchical document retrieval | 🥉 Rank 4: 0.9200 score |
 | **Ensemble** | Combination of multiple retrievers | Rank 7: 0.91 score |
-| **Naive** | Basic vector similarity search | Rank 8: 0.91 score |
+| **Naive** | Basic naive similarity search | Rank 8: 0.91 score |
 | **Multi-Query** | Multiple query generation | Rank 10: 0.91 score |
 
 #### 📊 Key Findings
@@ -481,7 +619,7 @@ Each technology choice was **purposefully selected**:
 
 ### 📈 Iterative Improvement Process
 
-1. **Initial Implementation**: Basic RAG with vector similarity search
+1. **Initial Implementation**: Basic RAG with naive similarity search
 2. **Performance Analysis**: Identified bottlenecks and accuracy issues
 3. **Advanced Methods**: Implemented BM25, compression, and ensemble retrievers
 4. **Comprehensive Evaluation**: Tested all methods with RAGAS framework
@@ -602,10 +740,11 @@ If you encounter issues not covered here:
 
 If you're experiencing slow performance:
 
-1. **Use BM25 Retrieval**: Fastest method (1.76s response time)
+1. **Use BM25 Retrieval**: Default method (1.76s response time) - fastest option
 2. **Enable Caching**: Results are cached for repeated queries
 3. **Optimize Chunk Size**: Default 1000 tokens works well for most cases
 4. **Monitor Costs**: Use LangSmith to track API usage and costs
+5. **Switch Methods**: Use Naive retrieval only for complex conceptual queries
 
 ## 🙏 Acknowledgments
 
