@@ -1,0 +1,74 @@
+[project]
+name = "immigration-gpt-v2"
+version = "0.1.0"
+description = "Comprehensive Retriever Evaluation Framework with RAGAS metrics"
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13.5"
+dependencies = [
+    # FastAPI and web server
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "python-multipart>=0.0.6",
+    # Core dependencies
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "tqdm>=4.65.0",
+    "python-dotenv>=1.0.0",
+    # LangChain ecosystem
+    "langchain>=0.1.0",
+    "langchain-community>=0.0.20",
+    "langchain-openai>=0.0.5",
+    "langchain-core>=0.1.0",
+    "langchain-text-splitters>=0.0.1",
+    "langchain-experimental>=0.0.50",
+    "langchain-cohere>=0.1.0",
+    # LangGraph
+    "langgraph>=0.1.0",
+    # Vector stores and embeddings
+    "qdrant-client>=1.6.0",
+    "langchain-qdrant>=0.1.0",
+    # Search tools
+    "langchain-tavily>=0.1.0",
+    # Document processing
+    "pymupdf>=1.23.0",
+    # AI/ML providers
+    "openai>=1.0.0",
+    "cohere>=4.0.0",
+    # RAGAS evaluation framework
+    "ragas>=0.1.0",
+    "pillow>=10.0.0",
+    # HTTP and networking
+    "httpx>=0.24.0",
+    "requests>=2.28.0",
+    # Data validation and serialization
+    "pydantic>=2.0.0",
+    "pydantic-core>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "pyyaml>=6.0",
+    # System utilities
+    "typing-extensions>=4.0.0",
+    # Jupyter notebook support
+    "ipykernel>=6.0.0",
+    "jupyter>=1.0.0",
+    "notebook>=7.0.0",
+    "rank-bm25>=0.2.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+]
