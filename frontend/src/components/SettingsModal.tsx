@@ -13,7 +13,8 @@ interface SettingsModalProps {
 }
 
 export function SettingsModal({ isOpen, onClose, isRequired = false }: SettingsModalProps) {
-  const { settings, updateSettings } = useAppStore()
+  const { settings, updateSettings, getApiKeys, setApiKeys } = useAppStore()
+  const apiKeys = getApiKeys()
   const [formData, setFormData] = useState({
     openaiApiKey: '',
     tavilyApiKey: '',
@@ -36,14 +37,27 @@ export function SettingsModal({ isOpen, onClose, isRequired = false }: SettingsM
   useEffect(() => {
     if (isOpen) {
       setFormData({
-        openaiApiKey: settings.openaiApiKey,
-        tavilyApiKey: settings.tavilyApiKey,
-        langchainApiKey: settings.langchainApiKey,
+        openaiApiKey: apiKeys.openaiApiKey,
+        tavilyApiKey: apiKeys.tavilyApiKey,
+        langchainApiKey: apiKeys.langchainApiKey,
         retrievalMethod: settings.retrievalMethod,
       })
       loadSettingsStatus()
     }
-  }, [isOpen, settings])
+  }, [isOpen]) // Remove apiKeys and settings from dependencies to prevent infinite re-renders
+
+  // Update form data when API keys change (but only if modal is open)
+  useEffect(() => {
+    if (isOpen) {
+      setFormData(prev => ({
+        ...prev,
+        openaiApiKey: apiKeys.openaiApiKey,
+        tavilyApiKey: apiKeys.tavilyApiKey,
+        langchainApiKey: apiKeys.langchainApiKey,
+        retrievalMethod: settings.retrievalMethod,
+      }))
+    }
+  }, [apiKeys.openaiApiKey, apiKeys.tavilyApiKey, apiKeys.langchainApiKey, settings.retrievalMethod, isOpen])
 
   const loadSettingsStatus = async () => {
     try {
@@ -94,6 +108,8 @@ export function SettingsModal({ isOpen, onClose, isRequired = false }: SettingsM
   }
 
   const handleSave = async () => {
+    console.log('Saving settings with formData:', formData)
+    
     // Validate required fields
     if (!formData.openaiApiKey.trim()) {
       toast.error('OpenAI API Key is required')
@@ -106,11 +122,15 @@ export function SettingsModal({ isOpen, onClose, isRequired = false }: SettingsM
 
     setIsSaving(true)
     try {
-      // Update local settings
-      updateSettings({
+      // Update API keys securely (not persisted)
+      setApiKeys({
         openaiApiKey: formData.openaiApiKey,
         tavilyApiKey: formData.tavilyApiKey,
         langchainApiKey: formData.langchainApiKey,
+      })
+
+      // Update non-sensitive settings (persisted)
+      updateSettings({
         retrievalMethod: formData.retrievalMethod,
       })
 
@@ -234,7 +254,10 @@ export function SettingsModal({ isOpen, onClose, isRequired = false }: SettingsM
                   <input
                     type={showKeys.openai ? 'text' : 'password'}
                     value={formData.openaiApiKey}
-                    onChange={(e) => setFormData(prev => ({ ...prev, openaiApiKey: e.target.value }))}
+                    onChange={(e) => {
+                      console.log('OpenAI API key changed:', e.target.value)
+                      setFormData(prev => ({ ...prev, openaiApiKey: e.target.value }))
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
                     placeholder="sk-..."
                   />

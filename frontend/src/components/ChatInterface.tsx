@@ -28,12 +28,20 @@ export function ChatInterface() {
     isLoading,
     setLoading,
     settings,
+    getApiKeys,
   } = useAppStore()
 
   const currentConversation = getCurrentConversation()
+  const apiKeys = getApiKeys()
+
+  // Ensure settings object is properly initialized
+  const safeSettings = settings || {
+    apiUrl: 'http://localhost:8000',
+    retrievalMethod: 'bm25' as const,
+  }
 
   // Check if API keys are configured
-  const isConfigured = settings.openaiApiKey && settings.tavilyApiKey
+  const isConfigured = apiKeys.openaiApiKey && apiKeys.tavilyApiKey
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -322,13 +330,13 @@ export function ChatInterface() {
           {/* Retrieval Method Indicator */}
           <div className="flex items-center space-x-2">
             <div className="flex items-center space-x-1 px-2 py-1 bg-gray-100 rounded-lg">
-              {settings.retrievalMethod === 'bm25' ? (
+              {(safeSettings.retrievalMethod || 'bm25') === 'bm25' ? (
                 <Zap size={14} className="text-blue-500" />
               ) : (
                 <Search size={14} className="text-purple-500" />
               )}
               <span className="text-xs font-medium text-gray-700">
-                {settings.retrievalMethod.toUpperCase()}
+                {(safeSettings.retrievalMethod || 'bm25').toUpperCase()}
               </span>
             </div>
           </div>

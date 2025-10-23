@@ -33,8 +33,8 @@ interface AppState {
   conversations: Conversation[]
   currentConversationId: string | null
   
-  // Settings
-  settings: Settings
+  // Settings (non-sensitive only)
+  settings: Omit<Settings, 'openaiApiKey' | 'tavilyApiKey' | 'langchainApiKey'>
   
   // UI State
   isLoading: boolean
@@ -47,17 +47,49 @@ interface AppState {
   updateSettings: (settings: Partial<Settings>) => void
   setLoading: (loading: boolean) => void
   
+  // Secure API key management
+  setApiKeys: (keys: { openaiApiKey?: string; tavilyApiKey?: string; langchainApiKey?: string }) => void
+  getApiKeys: () => { openaiApiKey: string; tavilyApiKey: string; langchainApiKey: string }
+  clearApiKeys: () => void
+  
   // Getters
   getCurrentConversation: () => Conversation | null
   getConversation: (id: string) => Conversation | null
 }
 
-const defaultSettings: Settings = {
+const defaultSettings: Omit<Settings, 'openaiApiKey' | 'tavilyApiKey' | 'langchainApiKey'> = {
+  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+  retrievalMethod: 'bm25', // Default to BM25
+}
+
+// Secure API key storage (not persisted)
+let secureApiKeys = {
   openaiApiKey: '',
   tavilyApiKey: '',
   langchainApiKey: '',
-  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
-  retrievalMethod: 'bm25', // Default to BM25
+}
+
+// Clear any existing API keys from localStorage on app start
+if (typeof window !== 'undefined') {
+  try {
+    const stored = localStorage.getItem('immigration-gpt-storage')
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      if (parsed.state?.settings?.openaiApiKey || parsed.state?.settings?.tavilyApiKey || parsed.state?.settings?.langchainApiKey) {
+        // Clear API keys from stored data
+        parsed.state.settings = {
+          ...parsed.state.settings,
+          openaiApiKey: '',
+          tavilyApiKey: '',
+          langchainApiKey: '',
+        }
+        localStorage.setItem('immigration-gpt-storage', JSON.stringify(parsed))
+        console.log('🔒 Cleared API keys from localStorage for security')
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to clear API keys from localStorage:', error)
+  }
 }
 
 // Create the store with proper SSR handling
@@ -117,12 +149,54 @@ const useAppStore = create<AppState>()(
       
       updateSettings: (newSettings: Partial<Settings>) => {
         set((state) => ({
-          settings: { ...state.settings, ...newSettings },
+          settings: { 
+            ...state.settings, 
+            apiUrl: newSettings.apiUrl || state.settings.apiUrl,
+            retrievalMethod: newSettings.retrievalMethod || state.settings.retrievalMethod,
+          },
         }))
+        
+        // Handle API keys separately (not persisted)
+        if (newSettings.openaiApiKey !== undefined) {
+          secureApiKeys.openaiApiKey = newSettings.openaiApiKey
+        }
+        if (newSettings.tavilyApiKey !== undefined) {
+          secureApiKeys.tavilyApiKey = newSettings.tavilyApiKey
+        }
+        if (newSettings.langchainApiKey !== undefined) {
+          secureApiKeys.langchainApiKey = newSettings.langchainApiKey
+        }
       },
       
       setLoading: (loading: boolean) => {
         set({ isLoading: loading })
+      },
+      
+      // Secure API key management
+      setApiKeys: (keys: { openaiApiKey?: string; tavilyApiKey?: string; langchainApiKey?: string }) => {
+        if (keys.openaiApiKey !== undefined) {
+          secureApiKeys.openaiApiKey = keys.openaiApiKey
+        }
+        if (keys.tavilyApiKey !== undefined) {
+          secureApiKeys.tavilyApiKey = keys.tavilyApiKey
+        }
+        if (keys.langchainApiKey !== undefined) {
+          secureApiKeys.langchainApiKey = keys.langchainApiKey
+        }
+      },
+      
+      getApiKeys: () => ({
+        openaiApiKey: secureApiKeys.openaiApiKey,
+        tavilyApiKey: secureApiKeys.tavilyApiKey,
+        langchainApiKey: secureApiKeys.langchainApiKey,
+      }),
+      
+      clearApiKeys: () => {
+        secureApiKeys = {
+          openaiApiKey: '',
+          tavilyApiKey: '',
+          langchainApiKey: '',
+        }
       },
       
       // Getters
@@ -144,18 +218,25 @@ const useAppStore = create<AppState>()(
       partialize: (state) => ({
         conversations: state.conversations,
         currentConversationId: state.currentConversationId,
-        settings: state.settings,
+        settings: state.settings, // Only non-sensitive settings are persisted
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
           try {
             // Ensure all conversations have valid dates when rehydrating from storage
             state.conversations = state.conversations.map(ensureValidDates)
+            
+            // Ensure settings object is properly initialized with defaults
+            state.settings = {
+              ...defaultSettings,
+              ...state.settings,
+            }
           } catch (error) {
             console.warn('Error rehydrating store:', error)
             // Reset to default state if there's an error
             state.conversations = []
             state.currentConversationId = null
+            state.settings = defaultSettings
           }
         } else {
           // If no state exists, ensure we have proper defaults
