@@ -353,9 +353,9 @@ export function ChatInterface() {
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {currentConversation ? (
+        {currentConversation && currentConversation.messages.length > 0 ? (
           <>
-            {currentConversation?.messages?.map((message) => (
+            {currentConversation.messages.map((message) => (
               <MessageBubble key={message.id} message={message} />
             ))}
             
@@ -374,13 +374,36 @@ export function ChatInterface() {
                 Ask me anything about US immigration policies, forms, procedures, and more. 
                 I can help you understand complex immigration topics with accurate, up-to-date information.
               </p>
-              <div className="space-y-2 text-sm text-gray-500">
-                <p>💡 Try asking:</p>
-                <ul className="text-left space-y-1">
-                  <li>• "What is Form I-730?"</li>
-                  <li>• "How do I apply for asylum?"</li>
-                  <li>• "What are the requirements for refugee status?"</li>
-                </ul>
+              <div className="space-y-4">
+                <div className="space-y-2 text-sm text-gray-500">
+                  <p className="font-medium text-gray-700">💡 Try asking:</p>
+                  <div className="grid gap-2">
+                    <button
+                      onClick={() => setInput("What is Form I-730?")}
+                      className="text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200 hover:border-gray-300"
+                    >
+                      <span className="text-gray-700 font-medium">What is Form I-730?</span>
+                    </button>
+                    <button
+                      onClick={() => setInput("How do I apply for asylum?")}
+                      className="text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200 hover:border-gray-300"
+                    >
+                      <span className="text-gray-700 font-medium">How do I apply for asylum?</span>
+                    </button>
+                    <button
+                      onClick={() => setInput("What are the requirements for refugee status?")}
+                      className="text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200 hover:border-gray-300"
+                    >
+                      <span className="text-gray-700 font-medium">What are the requirements for refugee status?</span>
+                    </button>
+                    <button
+                      onClick={() => setInput("What documents do I need for a green card application?")}
+                      className="text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200 hover:border-gray-300"
+                    >
+                      <span className="text-gray-700 font-medium">What documents do I need for a green card application?</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
